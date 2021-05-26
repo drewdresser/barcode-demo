@@ -1,22 +1,12 @@
-# barcode-demo
-
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
+# Barcode Reader Lambda Function
+This project demonstrates how you can create a Lambda function to detect barcodes within images using the pyzbar and zbar libraries. Within the project, you will find:
 
 - hello_world - Code for the application's Lambda function and Project Dockerfile.
-- events - Invocation events that you can use to invoke the function.
+- events - Invocation events that you can use to invoke the function plus a sample barcode image.
 - tests - Unit tests for the application code. 
 - template.yaml - A template that defines the application's AWS resources.
 
-The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
-
-## Helpful links
-- https://github.com/NaturalHistoryMuseum/pyzbar/issues/40
-- https://serverlessland.com/patterns/s3-lambda
-- https://gist.github.com/redlotus/0cfeb4987723293db134
-- https://github.com/NaturalHistoryMuseum/pyzbar/
-- https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
-- Create ECR: https://aws.amazon.com/blogs/compute/using-container-image-support-for-aws-lambda-with-aws-sam/
-- https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html
+The application uses several AWS resources, including Lambda functions and two Amazon S3 buckets. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
 
 ## Deploy the sample application
 
@@ -27,8 +17,7 @@ To use the SAM CLI, you need the following tools.
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
-You may need the following for local testing.
-* [Python 3 installed](https://www.python.org/downloads/)
+You also must [create an ECR Repository](https://aws.amazon.com/blogs/compute/using-container-image-support-for-aws-lambda-with-aws-sam/) to store the docker image that your Lambda function will use.
 
 To build and deploy your application for the first time, run the following in your shell:
 
@@ -45,7 +34,7 @@ The first command will build a docker image from a Dockerfile and then copy the 
 * **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modifies IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
-You can find your API Gateway Endpoint URL in the output values displayed after deployment.
+You can find your S3 buckets in the output values displayed after deployment.
 
 ## Use the SAM CLI to build and test locally
 
@@ -61,30 +50,12 @@ Test a single function by invoking it directly with a test event. An event is a 
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
+1. First, go replace the bucket name and key name of the mock event in `events/event.json` with a bucket a file that actually exists. You can use the bucket that you created as part of this stack on the first deploy.
+2. Open `env.json` and replace the destination bucket with the destination bucket you created during the deploy.
+3. Run:
 ```bash
-barcode-demo$ sam local invoke HelloWorldFunction --event events/event.json
+barcode-demo$ sam local invoke BarcodeDetectorFn --event events/event.json --env-vars env.json
 ```
-
-The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
-
-```bash
-barcode-demo$ sam local start-api
-barcode-demo$ curl http://localhost:3000/
-```
-
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
-
-```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: get
-```
-
-## Add a resource to your application
-The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
 
 ## Fetch, tail, and filter Lambda function logs
 
@@ -93,19 +64,11 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-barcode-demo$ sam logs -n HelloWorldFunction --stack-name barcode-demo --tail
+barcode-demo$ sam logs -n BarcodeDetectorFn --stack-name barcode-demo --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
 
-## Unit tests
-
-Tests are defined in the `tests` folder in this project. Use PIP to install the [pytest](https://docs.pytest.org/en/latest/) and run unit tests from your local machine.
-
-```bash
-barcode-demo$ pip install pytest pytest-mock --user
-barcode-demo$ python -m pytest tests/ -v
-```
 
 ## Cleanup
 
@@ -116,7 +79,10 @@ aws cloudformation delete-stack --stack-name barcode-demo
 ```
 
 ## Resources
-
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
+- https://github.com/NaturalHistoryMuseum/pyzbar/issues/40
+- https://serverlessland.com/patterns/s3-lambda
+- https://gist.github.com/redlotus/0cfeb4987723293db134
+- https://github.com/NaturalHistoryMuseum/pyzbar/
+- https://aws.amazon.com/blogs/aws/new-for-aws-lambda-container-image-support/
+- https://docs.aws.amazon.com/lambda/latest/dg/with-s3-tutorial.html
+- `aws s3 cp events/barcodes.jpg s3://<your_input_bucket>/barcodes.jpg`

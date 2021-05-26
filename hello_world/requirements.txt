@@ -1,0 +1,6 @@
+requests
+pyzbar
+opencv-python
+imageio
+imgaug
+boto3

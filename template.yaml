@@ -10,11 +10,11 @@ Parameters:
     Type: String
 
 Resources:
-  ## S3 bucket
   SourceBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref SourceBucketName    
+
   DestinationBucket:
     Type: AWS::S3::Bucket
     Properties:

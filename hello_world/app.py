@@ -5,8 +5,8 @@ import os
 import uuid
 from urllib.parse import unquote_plus
 
-import pyzbar.pyzbar as pyzbar
-from pyzbar.pyzbar import decode
+# from pyzbar.pyzbar import decode
+from pylibdmtx.pylibdmtx import decode
 import numpy as np
 import cv2
 
@@ -20,20 +20,24 @@ s3 = boto3.client('s3')
 textract = boto3.client('textract')
 DESTINATION_BUCKETNAME = os.environ['DESTINATION_BUCKETNAME']
 
-def decode(im):
-    print("Decoding image")
-    decoded_objects = pyzbar.decode(im)
-    print(decoded_objects)
-    for obj in decoded_objects:
-        print("Type: {}".format(str(obj.type)))
-        print("Data: {}".format(str(obj.data)))
-    return decoded_objects
+# use this if you're using pyzbar
+# def decode(im):
+#     print("Decoding image")
+#     decoded_objects = pyzbar.decode(im)
+#     print(decoded_objects)
+#     for obj in decoded_objects:
+#         print("Type: {}".format(str(obj.type)))
+#         print("Data: {}".format(str(obj.data)))
+#     return decoded_objects
 
 def detect_boxes(image_path, resized_path):
+    print("Detecting boxes")
     with Image.open(image_path) as image:
         image.save(resized_path)
-    im = cv2.imread(image_path)
-    decode(im)
+        decoded_objects = decode(image)
+        print(decoded_objects)
+    # im = cv2.imread(image_path)
+    # decode(im)
 
 
 def lambda_handler(event, context):
